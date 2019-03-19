@@ -46,7 +46,9 @@ The solution has been verified to perform well with over 10 millions of records.
   * same MeterId used for meters with different names, categories and subcategories,
   * missing or incomplete InstanceId,
   * ConsumedService field is often blank, but appears as a part of InstanceId.
-   To circumvent the above inconsistencies and additional data transformations had to be implemented.
+
+To circumvent the above inconsistencies and additional data transformations had to be implemented.
+
 2. I have not figured out how to eliminate SQL Server authentication and use Service Principal only. It easy co connect using Service Principal to AAS or SQL Server but I have not how to force AAS to use Service Principal to pull data during database processing. I doubt it is possible since Service Principal tokens are issued for particular resource. Not being able to eliminate SQL Server authentication I decided not to use Service Principal, other than to connect to AAS.
 3. WebJobs SDK: the solution uses the latest SDK version 3.0. This version introduced many breaking changes and is not well documented. Typically, introduction of major changes with no sufficient documentation is Microsoft&#39;s gentle suggestion to migrate to other technology - Azure Functions in this case. However, Azure Functions could not be used yet.
 4. AAS authentication: it seems Administrator role is required to programmatically connect to AAS or even just list available databases.
