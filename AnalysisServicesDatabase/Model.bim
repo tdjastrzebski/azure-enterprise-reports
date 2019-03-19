@@ -1,0 +1,696 @@
+{
+  "name": "SemanticModel",
+  "compatibilityLevel": 1400,
+  "model": {
+    "name": "Azure Usage Model",
+    "culture": "en-US",
+    "dataSources": [
+      {
+        "type": "structured",
+        "name": "aer-database",
+        "connectionDetails": {
+          "protocol": "tds",
+          "address": {
+            "server": "[server_name].database.windows.net",
+            "database": "aer-database"
+          },
+          "authentication": null,
+          "query": null
+        },
+        "options": {
+          "commandTimeout": "PT2H"
+        },
+        "credential": {
+          "AuthenticationKind": "UsernamePassword",
+          "Username": "",
+          "EncryptConnection": false
+        }
+      }
+    ],
+    "tables": [
+      {
+        "name": "Usage Meters",
+        "columns": [
+          {
+            "name": "MeterCategory",
+            "dataType": "string",
+            "sourceColumn": "MeterCategory"
+          },
+          {
+            "name": "MeterSubcategory",
+            "dataType": "string",
+            "sourceColumn": "MeterSubcategory"
+          },
+          {
+            "name": "MeterName",
+            "dataType": "string",
+            "sourceColumn": "MeterName"
+          },
+          {
+            "name": "NewMeterId",
+            "dataType": "string",
+            "isHidden": true,
+            "isKey": true,
+            "sourceColumn": "NewMeterId"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"aer-database\",",
+                "    dbo_MetersView = Source{[Schema=\"dbo\",Item=\"MetersView\"]}[Data]",
+                "in",
+                "    dbo_MetersView"
+              ]
+            }
+          }
+        ],
+        "hierarchies": [
+          {
+            "name": "Category-Subcategory-Name",
+            "levels": [
+              {
+                "name": "MeterCategory",
+                "ordinal": 0,
+                "column": "MeterCategory"
+              },
+              {
+                "name": "MeterSubcategory",
+                "ordinal": 1,
+                "column": "MeterSubcategory"
+              },
+              {
+                "name": "MeterName",
+                "ordinal": 2,
+                "column": "MeterName"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Usage Dates",
+        "dataCategory": "Time",
+        "columns": [
+          {
+            "name": "Date",
+            "dataType": "dateTime",
+            "isKey": true,
+            "sourceColumn": "Date"
+          },
+          {
+            "name": "Year",
+            "dataType": "int64",
+            "sourceColumn": "Year"
+          },
+          {
+            "name": "MonthName",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "MonthName"
+          },
+          {
+            "name": "QuarterName",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "QuarterName"
+          },
+          {
+            "name": "WeekName",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "WeekName"
+          },
+          {
+            "name": "YearQuarter",
+            "dataType": "string",
+            "sourceColumn": "YearQuarter"
+          },
+          {
+            "name": "YearMonth",
+            "dataType": "string",
+            "sourceColumn": "YearMonth"
+          },
+          {
+            "name": "YearWeek",
+            "dataType": "string",
+            "sourceColumn": "YearWeek"
+          },
+          {
+            "name": "Weekday",
+            "dataType": "int64",
+            "sourceColumn": "Weekday"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"aer-database\",",
+                "    dbo_UsageDatesView = Source{[Schema=\"dbo\",Item=\"UsageDatesView\"]}[Data]",
+                "in",
+                "    dbo_UsageDatesView"
+              ]
+            }
+          }
+        ],
+        "hierarchies": [
+          {
+            "name": "Year-Month-Date",
+            "levels": [
+              {
+                "name": "Year",
+                "ordinal": 0,
+                "column": "Year"
+              },
+              {
+                "name": "MonthName",
+                "ordinal": 1,
+                "column": "MonthName"
+              },
+              {
+                "name": "Date",
+                "ordinal": 2,
+                "column": "Date"
+              }
+            ]
+          },
+          {
+            "name": "Year-Quarter-Month-Date",
+            "levels": [
+              {
+                "name": "Year",
+                "ordinal": 0,
+                "column": "Year"
+              },
+              {
+                "name": "QuarterName",
+                "ordinal": 1,
+                "column": "QuarterName"
+              },
+              {
+                "name": "MonthName",
+                "ordinal": 2,
+                "column": "MonthName"
+              },
+              {
+                "name": "Date",
+                "ordinal": 3,
+                "column": "Date"
+              }
+            ]
+          },
+          {
+            "name": "Year-Week-Date",
+            "levels": [
+              {
+                "name": "Year",
+                "ordinal": 0,
+                "column": "Year"
+              },
+              {
+                "name": "WeekName",
+                "ordinal": 1,
+                "column": "WeekName"
+              },
+              {
+                "name": "Date",
+                "ordinal": 2,
+                "column": "Date"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Usage Records",
+        "columns": [
+          {
+            "name": "RecordId",
+            "dataType": "string",
+            "isHidden": true,
+            "isKey": true,
+            "sourceColumn": "RecordId"
+          },
+          {
+            "name": "ResourceGroupId",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "ResourceGroupId"
+          },
+          {
+            "name": "NewMeterId",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "NewMeterId"
+          },
+          {
+            "name": "Date",
+            "dataType": "dateTime",
+            "isHidden": true,
+            "sourceColumn": "Date"
+          },
+          {
+            "name": "Location",
+            "dataType": "string",
+            "sourceColumn": "Location"
+          },
+          {
+            "name": "InstanceId",
+            "dataType": "string",
+            "sourceColumn": "InstanceId"
+          },
+          {
+            "name": "Product",
+            "dataType": "string",
+            "sourceColumn": "Product"
+          },
+          {
+            "name": "Cost",
+            "dataType": "double",
+            "isHidden": true,
+            "sourceColumn": "Cost",
+            "formatString": "0.00"
+          },
+          {
+            "name": "ConsumedQuantity",
+            "dataType": "double",
+            "isHidden": true,
+            "sourceColumn": "ConsumedQuantity",
+            "formatString": "0.000"
+          },
+          {
+            "name": "UnitOfMeasure",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "UnitOfMeasure"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"aer-database\",",
+                "    dbo_AzureUsageRecordsView = Source{[Schema=\"dbo\",Item=\"AzureUsageRecordsView\"]}[Data]",
+                "in",
+                "    dbo_AzureUsageRecordsView"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "Distinct Count of InstanceId",
+            "expression": "DISTINCTCOUNT([InstanceId])",
+            "formatString": "0",
+            "detailRowsDefinition": {
+              "expression": [
+                "SELECTCOLUMNS('Usage Records',",
+                "\"InstanceId\", 'Usage Records'[InstanceId])"
+              ]
+            }
+          },
+          {
+            "name": "Sum of Cost",
+            "expression": "SUM([Cost])",
+            "formatString": "0.00",
+            "detailRowsDefinition": {
+              "expression": [
+                "SELECTCOLUMNS('Usage Records',",
+                "\"RecordId\", 'Usage Records'[RecordId],",
+                "\"Date\", 'Usage Records'[Date],",
+                "\"Product\", 'Usage Records'[Product],",
+                "\"ExtendedCost\", 'Usage Records'[Cost],",
+                "\"ConsumedQuantity\", 'Usage Records'[ConsumedQuantity],",
+                "\"UnitOfMeasure\", 'Usage Records'[UnitOfMeasure],",
+                "\"InstanceId\", 'Usage Records'[InstanceId])"
+              ]
+            }
+          },
+          {
+            "name": "Sum of ConsumedQuantity",
+            "expression": "SUM([ConsumedQuantity])",
+            "formatString": "0.00",
+            "detailRowsDefinition": {
+              "expression": [
+                "SELECTCOLUMNS('Usage Records',",
+                "\"RecordId\", 'Usage Records'[RecordId],",
+                "\"Date\", 'Usage Records'[Date],",
+                "\"Product\", 'Usage Records'[Product],",
+                "\"ExtendedCost\", 'Usage Records'[Cost],",
+                "\"ConsumedQuantity\", 'Usage Records'[ConsumedQuantity],",
+                "\"UnitOfMeasure\", 'Usage Records'[UnitOfMeasure],",
+                "\"InstanceId\", 'Usage Records'[InstanceId])"
+              ]
+            }
+          },
+          {
+            "name": "Count of RecordId",
+            "expression": "COUNTA([RecordId])",
+            "formatString": "0",
+            "detailRowsDefinition": {
+              "expression": [
+                "SELECTCOLUMNS('Usage Records',",
+                "\"RecordId\", 'Usage Records'[RecordId],",
+                "\"Date\", 'Usage Records'[Date],",
+                "\"Product\", 'Usage Records'[Product],",
+                "\"ExtendedCost\", 'Usage Records'[Cost],",
+                "\"ConsumedQuantity\", 'Usage Records'[ConsumedQuantity],",
+                "\"UnitOfMeasure\", 'Usage Records'[UnitOfMeasure],",
+                "\"InstanceId\", 'Usage Records'[InstanceId])"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "Department Account Subscription ResourceGroup",
+        "columns": [
+          {
+            "name": "DepartmentId",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "DepartmentId"
+          },
+          {
+            "name": "DepartmentName",
+            "dataType": "string",
+            "sourceColumn": "DepartmentName"
+          },
+          {
+            "name": "AccountId",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "AccountId"
+          },
+          {
+            "name": "AccountName",
+            "dataType": "string",
+            "sourceColumn": "AccountName"
+          },
+          {
+            "name": "SubscriptionName",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "SubscriptionName"
+          },
+          {
+            "name": "SubscriptionGuid",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "SubscriptionGuid"
+          },
+          {
+            "name": "ResourceGroup",
+            "dataType": "string",
+            "sourceColumn": "ResourceGroup"
+          },
+          {
+            "name": "ResourceGroupId",
+            "dataType": "string",
+            "isHidden": true,
+            "isKey": true,
+            "sourceColumn": "ResourceGroupId"
+          },
+          {
+            "type": "calculated",
+            "name": "SubscriptionNameId",
+            "dataType": "string",
+            "isDataTypeInferred": true,
+            "expression": "[SubscriptionName] & \" (\" & [SubscriptionGuid] & \")\""
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"aer-database\",",
+                "    dbo_DepartmentAccountSubscriptionResourceGroupView = Source{[Schema=\"dbo\",Item=\"DepartmentAccountSubscriptionResourceGroupView\"]}[Data]",
+                "in",
+                "    dbo_DepartmentAccountSubscriptionResourceGroupView"
+              ]
+            }
+          }
+        ],
+        "hierarchies": [
+          {
+            "name": "Department-Account-Subscription-ResourceGroup",
+            "levels": [
+              {
+                "name": "DepartmentName",
+                "ordinal": 0,
+                "column": "DepartmentName"
+              },
+              {
+                "name": "AccountName",
+                "ordinal": 1,
+                "column": "AccountName"
+              },
+              {
+                "name": "SubscriptionName",
+                "ordinal": 2,
+                "column": "SubscriptionName"
+              },
+              {
+                "name": "ResourceGroup",
+                "ordinal": 3,
+                "column": "ResourceGroup"
+              }
+            ]
+          },
+          {
+            "name": "Department-Account-Subscription",
+            "levels": [
+              {
+                "name": "DepartmentName",
+                "ordinal": 0,
+                "column": "DepartmentName"
+              },
+              {
+                "name": "AccountName",
+                "ordinal": 1,
+                "column": "AccountName"
+              },
+              {
+                "name": "SubscriptionName",
+                "ordinal": 2,
+                "column": "SubscriptionName"
+              }
+            ]
+          },
+          {
+            "name": "Subscription-ResourceGroup",
+            "levels": [
+              {
+                "name": "SubscriptionNameId",
+                "ordinal": 0,
+                "column": "SubscriptionNameId"
+              },
+              {
+                "name": "ResourceGroup",
+                "ordinal": 1,
+                "column": "ResourceGroup"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Tag Names Values",
+        "columns": [
+          {
+            "name": "TagName",
+            "dataType": "string",
+            "sourceColumn": "TagName"
+          },
+          {
+            "name": "TagValue",
+            "dataType": "string",
+            "sourceColumn": "TagValue"
+          },
+          {
+            "name": "TagNameValueId",
+            "dataType": "string",
+            "isHidden": true,
+            "isKey": true,
+            "sourceColumn": "TagNameValueId"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"aer-database\",",
+                "    dbo_TagNamesValuesView = Source{[Schema=\"dbo\",Item=\"TagNamesValuesView\"]}[Data]",
+                "in",
+                "    dbo_TagNamesValuesView"
+              ]
+            }
+          }
+        ],
+        "hierarchies": [
+          {
+            "name": "TagName-TagValue",
+            "levels": [
+              {
+                "name": "TagName",
+                "ordinal": 0,
+                "column": "TagName"
+              },
+              {
+                "name": "TagValue",
+                "ordinal": 1,
+                "column": "TagValue"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "TagsView",
+        "isHidden": true,
+        "columns": [
+          {
+            "name": "RecordId",
+            "dataType": "string",
+            "sourceColumn": "RecordId"
+          },
+          {
+            "name": "TagNameValueId",
+            "dataType": "string",
+            "sourceColumn": "TagNameValueId"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"aer-database\",",
+                "    dbo_TagsView = Source{[Schema=\"dbo\",Item=\"TagsView\"]}[Data]",
+                "in",
+                "    dbo_TagsView"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "Locations",
+        "columns": [
+          {
+            "name": "Location",
+            "dataType": "string",
+            "sourceColumn": "Location"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"aer-database\",",
+                "    dbo_LocationsView = Source{[Schema=\"dbo\",Item=\"LocationsView\"]}[Data]",
+                "in",
+                "    dbo_LocationsView"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "1e3a3033-c925-494f-acb3-77683b62f838",
+        "fromTable": "Usage Records",
+        "fromColumn": "NewMeterId",
+        "toTable": "Usage Meters",
+        "toColumn": "NewMeterId"
+      },
+      {
+        "name": "5da27e9c-dc86-4b01-be24-b3b78fffa26d",
+        "fromTable": "Usage Records",
+        "fromColumn": "Date",
+        "toTable": "Usage Dates",
+        "toColumn": "Date"
+      },
+      {
+        "name": "a5d871d7-6c5f-4f95-bee6-2d3054e8d895",
+        "fromTable": "Usage Records",
+        "fromColumn": "ResourceGroupId",
+        "toTable": "Department Account Subscription ResourceGroup",
+        "toColumn": "ResourceGroupId"
+      },
+      {
+        "name": "11eb44d6-9cf3-4b64-9270-4f390b2535aa",
+        "fromTable": "TagsView",
+        "fromColumn": "TagNameValueId",
+        "toTable": "Tag Names Values",
+        "toColumn": "TagNameValueId"
+      },
+      {
+        "name": "dabc8827-a845-4304-b6c8-e85ff3ae90b2",
+        "fromTable": "Usage Records",
+        "fromColumn": "Location",
+        "toTable": "Locations",
+        "toColumn": "Location"
+      },
+      {
+        "name": "7da8e8d3-dd6f-4d49-8fad-bd0d908f5496",
+        "fromTable": "TagsView",
+        "fromColumn": "RecordId",
+        "toTable": "Usage Records",
+        "toColumn": "RecordId",
+        "crossFilteringBehavior": "bothDirections"
+      }
+    ],
+    "roles": [
+      {
+        "name": "Reader",
+        "modelPermission": "read"
+      },
+      {
+        "name": "Processor",
+        "modelPermission": "refresh"
+      },
+      {
+        "name": "Admin",
+        "modelPermission": "administrator"
+      }
+    ],
+    "annotations": [
+      {
+        "name": "ClientCompatibilityLevel",
+        "value": "500"
+      }
+    ]
+  },
+  "id": "SemanticModel"
+}
