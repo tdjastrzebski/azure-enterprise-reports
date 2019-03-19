@@ -1,4 +1,4 @@
-# Azure enterprise usage reports (AER)
+# Azure Enterprise Usage Reports (AER)
 This software solution allows for retrieving, storing and analyzing Azure enterprise usage data along with resource Tags.
 
 ## Solution Description
