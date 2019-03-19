@@ -78,7 +78,7 @@ Copy **aer-writer** password to **appsettings.json** - SqlPassword.
 Note: in order to connect and process database in current AAS version service principal must be added to a role with Administrator permissions. Process permission is insufficient.
 1. Right-click on the VS **AnalysisServicesDatabase** project and select Deploy option. You will be asked to provide SQL Server credentials. Select Database option, use aer-reader and password from the **aer-reader.sql** script. You may also be prompted to upgrade compatibility level. Just disregards this message and continue with deploy.
 1. Set EaEnrollmentNumber and EaAccessKey in **appsettings.json** file. **EaAccessKey** can be obtained from Azure Enterprise admin page [https://ea.azure.com](https://ea.azure.com) (Reports/Download Usage/API Access Key).
-18. Before deploying to Azure run **DailyProcessingWebJob** project locally. For that either modify JobDailySchedule in **appsettings.json** or temporarily (!) change RunOnStartup=true in code. You may need to modify YearsToLookBack in **appsettings.json** as well.
+18. Before deploying to Azure run **DailyProcessingWebJob** project locally. For that either modify JobDailySchedule in **appsettings.json** or temporarily (!) change `RunOnStartup=true` in code. You may need to modify YearsToLookBack in **appsettings.json** as well.
 1. Verify log entries are stored in created **App Insights** instance. For that go to **App Insights** , select Analytics option and enter query: traces | order by timestamp desc.
 1. Upon successful test right-click **DailyProcessingWebJob** project and select &quot;Publish as Azure WebJob&quot; option. Publishing choose previously created **Resource Group** and configured **App Service**. If &quot;Publish as Azure WebJob&quot; option is unavailable make sure you have &quot;Azure Functions and Web Job Tools&quot; VS extension installed.
 1. Grant selected users and groups access to **Azure Analysis Service** (AAS) by adding them to AAS **Reader** role.
@@ -94,10 +94,10 @@ Note: in order to connect and process database in current AAS version service pr
 ## References
 
 1. [Reporting APIs for Enterprise customers - Usage Details](https://docs.microsoft.com/en-us/rest/api/billing/enterprise/billing-enterprise-api-usage-detail)
-2. [Azure Analysis Services - Adventure Works tutorial](https://docs.microsoft.com/en-us/azure/analysis-services/tutorials/aas-adventure-works-tutorial)
-3. [How to Automate Processing of Azure Analysis Services Models](https://sqldusty.com/2017/06/21/how-to-automate-processing-of-azure-analysis-services-models)
-4. [Tabular model solution deployment](https://docs.microsoft.com/en-us/sql/analysis-services/tabular-models/tabular-model-solution-deployment-ssas-tabular?view=sql-server-2017)
-5. [Automating Analysis Services Tabular Projects - Part 1: Deployment](http://notesfromthelifeboat.com/post/analysis-services-1-deployment)
-6. [Client libraries for connecting to Azure Analysis Services](https://docs.microsoft.com/en-us/azure/analysis-services/analysis-services-data-providers)
-7. [How to: Use the portal to create an Azure AD application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal)
-8. [Add a service principal to the server administrator role](https://docs.microsoft.com/en-us/azure/analysis-services/analysis-services-addservprinc-admins)
+1. [Azure Analysis Services - Adventure Works tutorial](https://docs.microsoft.com/en-us/azure/analysis-services/tutorials/aas-adventure-works-tutorial)
+1. [How to Automate Processing of Azure Analysis Services Models](https://sqldusty.com/2017/06/21/how-to-automate-processing-of-azure-analysis-services-models)
+1. [Tabular model solution deployment](https://docs.microsoft.com/en-us/sql/analysis-services/tabular-models/tabular-model-solution-deployment-ssas-tabular?view=sql-server-2017)
+1. [Automating Analysis Services Tabular Projects - Part 1: Deployment](http://notesfromthelifeboat.com/post/analysis-services-1-deployment)
+1. [Client libraries for connecting to Azure Analysis Services](https://docs.microsoft.com/en-us/azure/analysis-services/analysis-services-data-providers)
+1. [How to: Use the portal to create an Azure AD application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal)
+1. [Add a service principal to the server administrator role](https://docs.microsoft.com/en-us/azure/analysis-services/analysis-services-addservprinc-admins)
