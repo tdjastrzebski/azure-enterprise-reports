@@ -45,7 +45,7 @@ The solution has been verified to perform well with over 10 millions of records.
   * inconsistent casing (Location, ResourceGroup, InstanceId),
   * same MeterId used for meters with different names, categories and subcategories,
   * missing or incomplete InstanceId,
-  * onsumedService field is often blank, but appears as a part of InstanceId.
+  * ConsumedService field is often blank, but appears as a part of InstanceId.
 
 To circumvent the above inconsistencies and additional data transformations had to be implemented.
 
