@@ -70,7 +70,7 @@ Go to new **Storage**&quot;Access Keys&quot; and copy &quot;Connection string&qu
 1. Go to **SqlServerDatabase** VS project and set up passwords in **aer-admin.sql** , **aer-reader.sql** and **aer-writer.sql** scripts found in Security folder.
 Copy **aer-writer** password to **appsettings.json** - SqlPassword.
 1. Right-click on the **SqlServerDatabase** project and select Publish option. During this step you will have to provide full server name `[name].database.windows.net`, and server admin credentials. Upon connection you will be asked to confirm firewall modification to allow connection from your computer.
-1. Create **Azure Analysis Service** (AAS). Use the same **Resource Group** and Location. For initial tests D1 ricing tier may be sufficient although it has 1GB database size limit.
+1. Create **Azure Analysis Service** (AAS). Use the same **Resource Group** and Location. For initial tests D1 ricing tier may be sufficient, although it has 1GB database size limit.
 1. Configure **appsettings.json** AasService `[location].asazure.windows.net` and AasServer (the server name you selected). AasDatabase may stay unchanged: &quot;AzureUsage&quot;.
 1. Go to the VS **AnalysisServicesDatabase** project properties enter AAS Server URL `asazure://[location].asazure.windows.net/[server name]`.
 1. Open **Model.bim** and under &quot;Data Sources&quot; right-click on data connection, select &quot;Change Source&quot; and modify Server and Database name.
