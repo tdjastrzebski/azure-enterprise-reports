@@ -24,7 +24,8 @@ public class Program
 {
     private readonly ILogger _logger;
     private readonly IConfiguration _config;
-
+    
+    // manadatory params
     private readonly string SqlServer;
     private readonly string SqlDatabase;
     private readonly string SqlUser;
@@ -284,7 +285,7 @@ public class Program
         }
     }
 
-    /// <remarks>this method allows to load date from the csv file</remarks>
+    /// <remarks>this method allows to load data from the csv file</remarks>
     private async Task<int> Run(string filePath, DateTime dateFrom, DateTime dateTo, CancellationToken token)
     {
         try {
