@@ -2,19 +2,14 @@
 This software solution allows for retrieving, storing and analyzing Azure enterprise usage data along with resource Tags.
 
 ## Solution Description
-This software solution allows for retrieving, storing and analyzing Azure enterprise usage data along with resource Tags.
-
-The solution is dedicated to enterprises, rather than individual subscription owners.
-
-The solution is designed to be hosted in Azure and consists of three main components:
-
-- WebJob as ETL engine
-- SQL Server database providing raw data store
-- Azure Analysis Services (AAS) as hierarchical, aggregated data store
-
-Reports, typically in Excel or Power BI, using AAS as a data source, return truly lightspeed results.
-
-The solution has been optimized to store and process millions of usage records.
+* This software solution allows for retrieving, storing and analyzing Azure enterprise usage data along with resource Tags.
+* The solution is dedicated to enterprises, rather than individual subscription owners.
+* The solution is designed to be hosted in Azure and consists of three main components:
+  * WebJob as ETL engine
+  * SQL Server database providing raw data store
+  * Azure Analysis Services (AAS) as hierarchical, aggregated data store
+* Reports, typically in Excel or Power BI, using AAS as a data source, return truly lightspeed results.
+* The solution has been optimized to store and process millions of usage records.
 
 ![PowerBI report demo](PowerBiDemo.gif)
 
@@ -34,9 +29,8 @@ The solution has been optimized to store and process millions of usage records.
 
 ## Capacity
 The solution has been verified to perform well with over 10 millions of records.
-
-1. Azure Analysis Services (AAS) database consumes about 100MB of space per each million of records.
-2. Azure SQL Server database consumes about 1GB per each million of records.
+* Azure Analysis Services (AAS) database consumes about 100MB of space per each million of records.
+* Azure SQL Server database consumes about 1GB per each million of records.
 
 ## Challenges Encountered
 1. Data available via webservice is not always 100% consistent. Some examples:
