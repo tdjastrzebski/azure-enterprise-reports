@@ -7,3 +7,4 @@
 *.dbmdl
 .vs/
 *.jfm
+*.bacpac
