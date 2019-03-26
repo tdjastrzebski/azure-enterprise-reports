@@ -4,3 +4,6 @@
 
 *.user
 *.cache
+*.dbmdl
+.vs/
+*.jfm
