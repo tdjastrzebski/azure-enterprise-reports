@@ -19,8 +19,8 @@ The solution has been optimized to store and process millions of usage records.
 ![PowerBI report demo](PowerBiDemo.gif)
 
 ![Excel report demo](ExcelReportDemo.gif)
-## Architecture and Process Flow
 
+## Architecture and Process Flow
 1. Web Job retrieves Azure usage records from Reporting APIs for Enterprise customers.
 2. Retrieved records are stored in Azure SQL Server staging table. Once committed, SQL Server table indexes are defragmented. Database connection uses **aer-writer** user credentials.
 3. Service Principal token is obtained from Azure Active Directory (AAD).
@@ -31,15 +31,14 @@ The solution has been optimized to store and process millions of usage records.
 8. AAS Database is accessed from Power BI.
 9. AAS Database is accessed from Excel.
 ![solution diagram](SolutionDiagram.png)
-## Capacity
 
+## Capacity
 The solution has been verified to perform well with over 10 millions of records.
 
 1. Azure Analysis Services (AAS) database consumes about 100MB of space per each million of records.
 2. Azure SQL Server database consumes about 1GB per each million of records.
 
 ## Challenges Encountered
-
 1. Data available via webservice is not always 100% consistent. Some examples:
 
   * inconsistent casing (Location, ResourceGroup, InstanceId),
@@ -53,10 +52,9 @@ To circumvent the above inconsistencies, additional data transformations had to 
 3. WebJobs SDK: the solution uses the latest SDK version 3.0. This version has introduced many breaking changes and is not well documented. Typically, introduction of major changes with no sufficient documentation is Microsoft&#39;s gentle suggestion to migrate to other technology - Azure Functions in this case. However, Azure Functions cannot be used yet.
 4. AAS authentication: it seems Administrator role is required to programmatically connect to AAS or even just list available databases.
 5. AAS tools quality: however great and stable AAS can be, it somehow lacks first class support when it comes to VS extensions, SSDT or data access assemblies. An example: until the version 2.6 of extension,  adding service principal to any role caused exception. This worked in SSMS but then data source credentials did not get saved. There is no option to change data source name, which includes initially selected server name and could be misleading. These are just random examples.
-6. Deployment of AAS using &quot;Microsoft account&quot; credentials turned out to be unfeasible. It seems that &quot;Work or school account&quot; may be required.
+6. Deployment of AAS using &quot;Microsoft account&quot; credentials turned out to be infeasible. It seems that &quot;Work or school account&quot; may be required.
 
 # Deployment Steps
-
 1. Create new **App Service** of plain **Web App** type. Use either existing or new **App Service Plan**. Note: **App Service Plan** must be at least B1 level for the App Service to support required &quot;Always On&quot; option. In this step create **App Insights** instance and new **Resource Group**.
 1. Go to **App Service**&quot;Application settings&quot;, turn on &quot;Always On&quot; option and Save. This option is required for the scheduled **Web Jobs** to run.
 1. Go to created **App Insights** instance &quot;Overview&quot; and copy &quot;Instrumentation Key&quot; to **appsettings.json** – `APPINSIGHTS_INSTRUMENTATIONKEY`.
@@ -83,14 +81,14 @@ Note: in order to connect and process database in current AAS version, Service P
 1. Once the tests have been passed, right-click **DailyProcessingWebJob** project and select &quot;Publish as Azure WebJob&quot; option. While publishing, choose previously created **Resource Group** and configured **App Service**. If &quot;Publish as Azure WebJob&quot; option is unavailable make sure &quot;Azure Functions and Web Job Tools&quot; VS extension is installed.
 1. Grant selected users and groups access to **Azure Analysis Service** (AAS) by adding them to AAS **Reader** role.
 1. Modify PowerBI data source. To do that, open **AzureUsageReport.pbix** file and go to Home/Edit Queries/Data source settings.
-## Possible Improvements
 
+## Possible Improvements
 1. Create deployment script, which would greatly simplify deployment.
 1. Use Azure Functions instead of WebJob as soon as library providing Azure Analysis Services (AAS) access runs in .Net Core environment. As of February 2019 - it does not.
 1. Implement subscription level security. This option can be based on AAS built-in Dynamic security feature.
 1. Use Service Principal and tokens for SQL Server authentication.
-## References
 
+## References
 1. [Reporting APIs for Enterprise customers - Usage Details](https://docs.microsoft.com/en-us/rest/api/billing/enterprise/billing-enterprise-api-usage-detail)
 1. [Azure Analysis Services - Adventure Works tutorial](https://docs.microsoft.com/en-us/azure/analysis-services/tutorials/aas-adventure-works-tutorial)
 1. [How to Automate Processing of Azure Analysis Services Models](https://sqldusty.com/2017/06/21/how-to-automate-processing-of-azure-analysis-services-models)
