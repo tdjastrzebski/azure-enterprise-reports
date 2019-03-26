@@ -12,7 +12,7 @@ The solution is designed to be hosted in Azure and consists of three main compon
 - SQL Server database providing raw data store
 - Azure Analysis Services (AAS) as hierarchical, aggregated data store
 
-Reports, typically in Excel or Power BI, using AAS as a data source return truly lightspeed results.
+Reports, typically in Excel or Power BI, using AAS as a data source, return truly lightspeed results.
 
 The solution has been optimized to store and process millions of usage records.
 
@@ -49,10 +49,10 @@ The solution has been verified to perform well with over 10 millions of records.
 
 To circumvent the above inconsistencies, additional data transformations had to be implemented.
 
-2. It has not been figured out how to eliminate SQL Server authentication and use Service Principal only instead. It is easy to connect to AAS or SQL Server using Service Principal but it has not been determined how to force AAS to use Service Principal to pull data during database processing. It is unlikely to be possible since Service Principal tokens are issued for a particular resource. It has been decided not to use Service Principal for purposes other than connecting to AAS, as complete elimination of SQL Server authentication has proved to be impossible.
+2. It has not been figured out how to eliminate SQL Server authentication and use Service Principal only instead. It is easy to connect to AAS or SQL Server using Service Principal but it has not been determined how to force AAS to use Service Principal to pull data during database processing (delegate permissions). It may prove to be impossible since Service Principal tokens are issued for a particular resource. It has been decided not to use Service Principal for purposes other than connecting to AAS, as complete elimination of SQL Server authentication has proved to be impossible.
 3. WebJobs SDK: the solution uses the latest SDK version 3.0. This version has introduced many breaking changes and is not well documented. Typically, introduction of major changes with no sufficient documentation is Microsoft&#39;s gentle suggestion to migrate to other technology - Azure Functions in this case. However, Azure Functions cannot be used yet.
 4. AAS authentication: it seems Administrator role is required to programmatically connect to AAS or even just list available databases.
-5. AAS tools quality: I believe AAS is a great, stable product, yet somehow lacking first class support when it comes to VS extensions, SSDT or data access assemblies. An example: until the version 2.6 of extension,  adding service principal to any role caused exception. This worked in SSMS but then data source credentials did not get saved. There is no option to change data source name which includes initially selected server name and could be misleading. These are just random examples.
+5. AAS tools quality: I believe AAS is a great, stable product, yet somehow lacking first class support when it comes to VS extensions, SSDT or data access assemblies. An example: until the version 2.6 of extension,  adding service principal to any role caused exception. This worked in SSMS but then data source credentials did not get saved. There is no option to change data source name, which includes initially selected server name and could be misleading. These are just random examples.
 6. I was unable to deploy AAS using &quot;Microsoft account&quot; credentials. It seems that &quot;Work or school account&quot; may be required.
 
 # Deployment Steps
@@ -86,7 +86,7 @@ Note: in order to connect and process database in current AAS version, Service P
 ## Possible Improvements
 
 1. Create deployment script, which would greatly simplify deployment.
-1. Use Azure Functions instead of WebJob as soon as library providing Azure Analysis Services (AAS) access runs in .Net Core environment. As of February 2019 it does not.
+1. Use Azure Functions instead of WebJob as soon as library providing Azure Analysis Services (AAS) access runs in .Net Core environment. As of February 2019 - it does not.
 1. Implement subscription level security. This option can be based on AAS built-in Dynamic security feature.
 1. Use Service Principal and tokens for SQL Server authentication.
 ## References
