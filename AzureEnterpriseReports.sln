@@ -5,6 +5,7 @@ VisualStudioVersion = 15.0.27004.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A70B0924-6B09-464B-9BB4-29CCB5426943}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
 		AzureUsageReport.pbix = AzureUsageReport.pbix
 		ExcelReportDemo.gif = ExcelReportDemo.gif
 		LICENSE = LICENSE
