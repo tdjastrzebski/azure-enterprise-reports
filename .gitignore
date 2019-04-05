@@ -8,3 +8,4 @@
 .vs/
 *.jfm
 *.bacpac
+MakeDemoData.sql
