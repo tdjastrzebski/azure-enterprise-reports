@@ -3,13 +3,13 @@ This software solution allows for retrieving, storing and analyzing Azure enterp
 
 ## Solution Description
 * This software solution allows for retrieving, storing and analyzing Azure enterprise usage data along with resource Tags.
-* The solution is dedicated to enterprises, rather than individual subscription owners.
 * The solution is designed to be hosted in Azure and consists of three main components:
   * WebJob as ETL engine
   * SQL Server database providing raw data store
   * Azure Analysis Services (AAS) as hierarchical, aggregated data store
 * Reports, typically in Excel or Power BI, using AAS as a data source, return truly lightspeed results.
 * The solution has been optimized to store and process millions of usage records.
+> The solution is dedicated to enterprises, rather than individual subscription owners. Enterprise account is required.
 
 ![PowerBI report demo](PowerBiDemo.gif)
 
