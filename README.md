@@ -10,6 +10,7 @@ This software solution allows for retrieving, storing and analyzing Azure enterp
 * Reports, typically in Excel or Power BI, using AAS as a data source, return truly lightspeed results.
 * The solution has been optimized to store and process millions of usage records.
 * The solution is dedicated to enterprises, rather than individual subscription owners. Enterprise account is required.
+* The below screenshots show sample reports but any report can be built easily.
 
 ![PowerBI report demo](PowerBiDemo.gif)
 
