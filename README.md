@@ -49,7 +49,7 @@ To circumvent the above inconsistencies, additional data transformations had to 
 5. AAS tools quality: however great and stable AAS can be, it somehow lacks first class support when it comes to VS extensions, SSDT or data access assemblies. An example: until the version 2.6 of extension,  adding service principal to any role caused exception. This worked in SSMS but then data source credentials did not get saved. There is no option to change data source name, which includes initially selected server name and could be misleading. These are just random examples.
 6. Deployment of AAS using &quot;Microsoft account&quot; credentials turned out to be infeasible. It seems that &quot;Work or school account&quot; may be required.
 
-# Deployment Steps
+## Deployment Steps
 1. Create new **App Service** of plain **Web App** type. Use either existing or new **App Service Plan**. Note: **App Service Plan** must be at least B1 level for the App Service to support required &quot;Always On&quot; option. In this step create **App Insights** instance and new **Resource Group**.
 1. Go to **App Service**&quot;Application settings&quot;, turn on &quot;Always On&quot; option and Save. This option is required for the scheduled **Web Jobs** to run.
 1. Go to created **App Insights** instance &quot;Overview&quot; and copy &quot;Instrumentation Key&quot; to **appsettings.json** – `APPINSIGHTS_INSTRUMENTATIONKEY`.
