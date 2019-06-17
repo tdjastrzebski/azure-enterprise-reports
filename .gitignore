@@ -9,3 +9,10 @@
 *.jfm
 *.bacpac
 MakeDemoData.sql
+/AnalysisServicesDatabase/bin
+/DailyProcessingWebJob/bin/Debug
+/AnalysisServicesDatabase/obj/Development
+/DailyProcessingWebJob/obj/Debug
+/packages
+/SqlServerDatabase/bin/Debug
+/SqlServerDatabase/obj/Debug

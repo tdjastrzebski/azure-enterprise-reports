@@ -325,6 +325,12 @@ public class Program
 
             using (var recReader = new CsvDataReader<DetailedUsage>(reader, x => { return Sink(x, dateFrom, dateTo); }, TrackMaxLenghts)) {
                 _batchStartTime = DateTime.UtcNow;
+                
+                // note: by default SqlBulkCopy relies on column ordinal only - create mappings
+                for (int sourceColumnOrdinal = 0; sourceColumnOrdinal < recReader.FieldCount; sourceColumnOrdinal++) {
+                    string destinationColumnName = recReader.GetName(sourceColumnOrdinal);
+                    bulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(sourceColumnOrdinal, destinationColumnName));
+                }
 
                 try {
                     await bulkCopy.WriteToServerAsync(recReader, token).ConfigureAwait(false);
