@@ -34,7 +34,7 @@ The solution has been verified to perform well with over 10 millions of records.
 * Azure SQL Server database consumes about 1GB per each million of records.
 
 ## Challenges Encountered
-1. Data available via webservice is not always 100% consistent. Some examples:
+1. Usage data available from MS webservice is not always 100% consistent. Some examples:
 
   * inconsistent casing (Location, ResourceGroup, InstanceId),
   * same MeterId used for meters with different names, categories and subcategories,
