@@ -93,6 +93,6 @@ Note: in order to connect and process database in current AAS version, Service P
 1. [How to: Use the portal to create an Azure AD application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal)
 1. [Add a service principal to the server administrator role](https://docs.microsoft.com/en-us/azure/analysis-services/analysis-services-addservprinc-admins)
 
-# Feedback
+## Feedback
 Finally, if you find this tool useful, please give it a star. This way others will be able to find it more easily.  
 Do not hesitate to leave comments/suggestions.
