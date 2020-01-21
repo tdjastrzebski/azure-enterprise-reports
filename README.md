@@ -34,12 +34,13 @@ The solution has been verified to perform well with over 10 millions of records.
 * Azure SQL Server database consumes about 1GB per each million of records.
 
 ## Challenges Encountered
-1. Data available via webservice is not always 100% consistent. Some examples:
+1. Usage data available from MS webservice is not always 100% consistent. Some examples:
 
   * inconsistent casing (Location, ResourceGroup, InstanceId),
   * same MeterId used for meters with different names, categories and subcategories,
   * missing or incomplete InstanceId,
-  * ConsumedService field is often blank but appears as a part of InstanceId.
+  * ConsumedService field is often blank but appears as a part of InstanceId,
+  * unknown fields max lengths.
 
 To circumvent the above inconsistencies, additional data transformations had to be implemented.
 
@@ -92,3 +93,7 @@ Note: in order to connect and process database in current AAS version, Service P
 1. [Client libraries for connecting to Azure Analysis Services](https://docs.microsoft.com/en-us/azure/analysis-services/analysis-services-data-providers)
 1. [How to: Use the portal to create an Azure AD application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal)
 1. [Add a service principal to the server administrator role](https://docs.microsoft.com/en-us/azure/analysis-services/analysis-services-addservprinc-admins)
+
+## Feedback
+Finally, if you find this tool useful, please give it a star. This way others will be able to find it more easily.  
+Do not hesitate to leave comments/suggestions.

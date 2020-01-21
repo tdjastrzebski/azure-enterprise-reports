@@ -48,7 +48,7 @@ public class Program
     private readonly int BatchCopyTimeout;
     private readonly int BatchSize;
     private readonly int PeriodCommitTimeout;
-    private readonly int YearsToLookBack;
+    private readonly int MonthsToLookBack;
     private readonly int IndexDefragTimeout;
     private readonly bool TrackMaxLenghts;
     private readonly bool BufferStream;
@@ -81,7 +81,7 @@ public class Program
         BatchCopyTimeout = _config.GetValue("BatchCopyTimeout", 60); // 60s
         BatchSize = _config.GetValue("BatchSize", 1000);
         PeriodCommitTimeout = _config.GetValue("PeriodCommitTimeout", 2 * 60 * 60); // 2h
-        YearsToLookBack = _config.GetValue("YearsToLookBack", 0); // number of years to look back during initial data load
+        MonthsToLookBack = _config.GetValue("MonthsToLookBack", 0); // number of months to look back during initial data load, it seems 9 months is max value
         IndexDefragTimeout = _config.GetValue("IndexDefragTimeout", 2 * 60 * 60); // 2h
         TrackMaxLenghts = _config.GetValue("TrackMaxLenghts", false);
         BufferStream = _config.GetValue("BufferStream", false);
@@ -127,14 +127,22 @@ public class Program
         DateTime? lastDate;
 
         using (var connection = GetSqlConnection()) {
+            try {
+                connection.Open();
+            } catch (SqlException e) {
+                _logger.LogError($"Error number {e.Number}, class {e.Class} while opening database connection: {e.Message}");
+                return;
+            }
             // check the last record date
-            connection.Open();
             var cmd = new SqlCommand("select max([Date]) from dbo.AzureUsageRecords", connection);
             lastDate = cmd.ExecuteScalar() as DateTime?;
             lastDate = lastDate?.AddDays(-3); // start 3 days earlier - just in case data was incomplete
-        }
+            }
 
-        if (lastDate == null) lastDate = new DateTime(DateTime.UtcNow.Date.Year - YearsToLookBack, 1, 1); // no records yet, start from January 1st
+        if (lastDate == null) {
+            // no records yet, start from 1st of this month
+            lastDate = new DateTime(DateTime.UtcNow.Date.Year, DateTime.UtcNow.Date.Month, 1).AddMonths(-MonthsToLookBack);
+        }
         if (lastDate < startDate) startDate = lastDate.Value;
 
         await Run(startDate, endDate, token).ConfigureAwait(false);
@@ -142,17 +150,15 @@ public class Program
 
     private async Task Run(DateTime startDate, DateTime endDate, CancellationToken token = default(CancellationToken))
     {
-        var dateFrom = startDate;
-        var dateTo = endDate;
-        int attemptCount = 0;
+        int attemptCount;
 
         for (int year = startDate.Year; year <= endDate.Year; year++) {
             int startMonth = (year == startDate.Year ? startDate.Month : 1);
             int endMonth = (year == endDate.Year ? endDate.Month : 12);
 
             for (int month = startMonth; month <= endMonth; month++) {
-                dateFrom = new DateTime(year, month, 1);
-                dateTo = new DateTime(year, month, 1).AddMonths(1).AddDays(-1);
+                DateTime dateFrom = new DateTime(year, month, 1);
+                DateTime dateTo = new DateTime(year, month, 1).AddMonths(1).AddDays(-1);
 
                 if (dateFrom < startDate) dateFrom = startDate;
                 if (dateTo > endDate) dateTo = endDate;
@@ -175,6 +181,9 @@ public class Program
                             break;
                         } else if (response?.StatusCode == HttpStatusCode.Unauthorized) {
                             _logger.LogError($"API access is unauthorized. Verify API access key is valid.");
+                            return;
+                        } else if (response?.StatusCode == HttpStatusCode.BadRequest) {
+                            _logger.LogError($"Bad request. Verify API call parameters, like date range.");
                             return;
                         } else {
                             LogException(ex);
@@ -420,6 +429,10 @@ public class Program
                             objectOpen = true;
                             break;
                         case JsonToken.String:
+                        case JsonToken.Date:
+                        case JsonToken.Integer:
+                        case JsonToken.Float:
+                        case JsonToken.Boolean:
                         case JsonToken.Null:
                             writer.WritePropertyName("value");
                             writer.WriteValue(reader.Value ?? "");
