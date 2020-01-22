@@ -2,7 +2,7 @@
     [AccountId]               INT              NOT NULL,
     [AccountName]             VARCHAR (50)     NOT NULL,
     [AccountOwnerEmail]       VARCHAR (50)     NOT NULL,
-    [AdditionalInfo]          VARCHAR (512)    NOT NULL,
+    [AdditionalInfo]          NVARCHAR(MAX)    NOT NULL,
     [ChargesBilledSeparately] BIT              NOT NULL,
     [ConsumedQuantity]        DECIMAL (28, 16) NOT NULL,
     [ConsumedService]         VARCHAR (50)     NOT NULL,
