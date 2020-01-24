@@ -1,18 +1,14 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
-
 *.user
 *.cache
 *.dbmdl
-.vs/
 *.jfm
 *.bacpac
 MakeDemoData.sql
-/AnalysisServicesDatabase/bin
-/DailyProcessingWebJob/bin/Debug
-/AnalysisServicesDatabase/obj/Development
-/DailyProcessingWebJob/obj/Debug
+.vs
 /packages
-/SqlServerDatabase/bin/Debug
-/SqlServerDatabase/obj/Debug
+/AnalysisServicesDatabase/bin
+/AnalysisServicesDatabase/obj
+/DailyProcessingWebJob/bin
+/DailyProcessingWebJob/obj
+/SqlServerDatabase/bin
+/SqlServerDatabase/obj
