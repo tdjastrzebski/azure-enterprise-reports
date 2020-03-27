@@ -77,10 +77,11 @@ Note: in order to connect and process database in current AAS version, Service P
 1. Once the tests have been passed, right-click **DailyProcessingWebJob** project and select &quot;Publish as Azure WebJob&quot; option. While publishing, choose previously created **Resource Group** and configured **App Service**. If &quot;Publish as Azure WebJob&quot; option is unavailable make sure &quot;Azure Functions and Web Job Tools&quot; VS extension is installed.
 1. Grant selected users and groups access to **Azure Analysis Service** (AAS) by adding them to AAS **Reader** role.
 1. Modify PowerBI data source. To do that, open **AzureUsageReport.pbix** file and go to Home/Edit Queries/Data source settings.
+1. Hint: connecting to Azure Analysis Services from Excel enter email address as user name and leave password blank. That should trigger AAD authentication.
 
 ## Possible Improvements
 1. Create deployment script, which would greatly simplify deployment.
-1. Use Azure Functions instead of WebJob as soon as library providing Azure Analysis Services (AAS) access runs in .Net Core environment. As of February 2019 - it does not.
+1. Use Azure Functions instead of WebJob.
 1. Implement subscription level security. This option can be based on AAS built-in Dynamic security feature.
 1. Use Service Principal and tokens for SQL Server authentication.
 

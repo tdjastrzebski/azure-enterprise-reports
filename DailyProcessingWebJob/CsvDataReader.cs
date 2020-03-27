@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright © Tomasz Jastrzębski 2019
+ * Copyright © Tomasz Jastrzębski 2019-2020
  */
 using CsvHelper;
 using System;
@@ -28,12 +28,11 @@ class CsvDataReader<T> : DbDataReader
 
     public CsvDataReader(StreamReader streamReader, Func<T, bool> sink = null, bool trackMaxLenghts = false)
     {
-        _csvReader = new CsvReader(streamReader);
-        _csvReader.Configuration.CultureInfo = CultureInfo.InvariantCulture;
+        _csvReader = new CsvReader(streamReader, CultureInfo.InvariantCulture);
         _csvReader.Configuration.Delimiter = CultureInfo.InvariantCulture.TextInfo.ListSeparator;
         _csvReader.Read();
         _csvReader.ReadHeader();
-        
+
         _sink = sink;
 
         var map = _csvReader.Configuration.AutoMap<T>();
@@ -53,7 +52,11 @@ class CsvDataReader<T> : DbDataReader
     public override bool Read()
     {
         do {
-            if (!_csvReader.Read()) return false;
+            try {
+                if (!_csvReader.Read()) return false;
+            } catch (ParserException e) {
+                throw new ApplicationException("Error while parsing the following line:\n" + e.ReadingContext.RawRecord, e);
+            }
             _currentRecord = _csvReader.GetRecord<T>();
 
             if (_trackMaxLenghts && _currentRecord != null) {

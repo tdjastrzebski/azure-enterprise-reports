@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("Azure Usage Daily Processing WebJob")]
 [assembly: AssemblyProduct("DailyProcessingWebJob")]
-[assembly: AssemblyCopyright("Copyright © Tomasz Jastrzębski 2019")]
+[assembly: AssemblyCopyright("Copyright © Tomasz Jastrzębski 2019-2020")]
 
 
 // Setting ComVisible to false makes the types in this assembly not visible 

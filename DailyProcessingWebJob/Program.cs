@@ -1,9 +1,8 @@
 ﻿/*
- * Copyright © Tomasz Jastrzębski 2019
+ * Copyright © Tomasz Jastrzębski 2019-2020
  */
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
@@ -24,7 +23,7 @@ public class Program
 {
     private readonly ILogger _logger;
     private readonly IConfiguration _config;
-    
+
     // mandatory params
     private readonly string SqlServer;
     private readonly string SqlDatabase;
@@ -78,9 +77,9 @@ public class Program
 
         MaxAttemptCount = _config.GetValue("MaxAttemptCount", 3);
         HttpRequestTimeout = _config.GetValue("HttpRequestTimeout", 1000 * 60 * 5); // 5 min
-        BatchCopyTimeout = _config.GetValue("BatchCopyTimeout", 60); // 60s
-        BatchSize = _config.GetValue("BatchSize", 1000);
-        PeriodCommitTimeout = _config.GetValue("PeriodCommitTimeout", 2 * 60 * 60); // 2h
+        BatchCopyTimeout = _config.GetValue("BatchCopyTimeout", 2*60); // 2 min
+        BatchSize = _config.GetValue("BatchSize", 10000);
+        PeriodCommitTimeout = _config.GetValue("PeriodCommitTimeout", 3 * 60 * 60); // 3h
         MonthsToLookBack = _config.GetValue("MonthsToLookBack", 0); // number of months to look back during initial data load, it seems 9 months is max value
         IndexDefragTimeout = _config.GetValue("IndexDefragTimeout", 2 * 60 * 60); // 2h
         TrackMaxLenghts = _config.GetValue("TrackMaxLenghts", false);
@@ -113,7 +112,7 @@ public class Program
 
     [Singleton]
     [FunctionName("TimerJob")]
-    public async Task TimerJob([TimerTrigger("%JobDailySchedule%", RunOnStartup = false)] TimerInfo timer, CancellationToken token = default(CancellationToken))
+    public async Task TimerJob([TimerTrigger("%JobDailySchedule%", RunOnStartup = false)] TimerInfo timer, CancellationToken token = default)
     {
         _logger.LogInformation("OS version: " + Environment.OSVersion);
         _logger.LogInformation("user interactive: " + Environment.UserInteractive);
@@ -128,16 +127,16 @@ public class Program
 
         using (var connection = GetSqlConnection()) {
             try {
-                connection.Open();
+                await connection.OpenAsync(token).ConfigureAwait(false);
             } catch (SqlException e) {
                 _logger.LogError($"Error number {e.Number}, class {e.Class} while opening database connection: {e.Message}");
                 return;
             }
             // check the last record date
             var cmd = new SqlCommand("select max([Date]) from dbo.AzureUsageRecords", connection);
-            lastDate = cmd.ExecuteScalar() as DateTime?;
-            lastDate = lastDate?.AddDays(-3); // start 3 days earlier - just in case data was incomplete
-            }
+            lastDate = await cmd.ExecuteScalarAsync(token).ConfigureAwait(false) as DateTime?;
+            lastDate = lastDate?.AddDays(-2); // start 2 days earlier - just in case previous data import was incomplete
+        }
 
         if (lastDate == null) {
             // no records yet, start from 1st of this month
@@ -167,11 +166,20 @@ public class Program
                 int commitCount = 0;
                 attemptCount = 0;
 
+                await TruncateStageRecords(token).ConfigureAwait(false);
+
+                // download and stage records
                 while (attemptCount < MaxAttemptCount) {
+                    if (attemptCount > 0) {
+                        // remove only last date from Stage and retry
+                        DateTime? lastDate = await ClearLastStagedDate(token).ConfigureAwait(false);
+                        if (lastDate.HasValue) dateFrom = lastDate.Value;
+                    }
+
                     _logger.LogInformation($"processing records in date range {dateFrom:d} - {dateTo:d}, attempt {attemptCount + 1}");
 
                     try {
-                        readCount = await Run(year, month, dateFrom, dateTo, token).ConfigureAwait(false);
+                        readCount = await UploadFromWebService(dateFrom, dateTo, token).ConfigureAwait(false);
                         break;
                     } catch (WebException ex) {
                         var response = ex.Response as HttpWebResponse;
@@ -183,7 +191,7 @@ public class Program
                             _logger.LogError($"API access is unauthorized. Verify API access key is valid.");
                             return;
                         } else if (response?.StatusCode == HttpStatusCode.BadRequest) {
-                            _logger.LogError($"Bad request. Verify API call parameters, like date range.");
+                            _logger.LogError($"Bad request. Verify API call parameters, particularly date range.");
                             return;
                         } else {
                             LogException(ex);
@@ -259,7 +267,7 @@ public class Program
         }
     }
 
-    private async Task<int> Run(int year, int month, DateTime dateFrom, DateTime dateTo, CancellationToken token)
+    private async Task<int> UploadFromWebService(DateTime dateFrom, DateTime dateTo, CancellationToken token)
     {
         // call details: https://docs.microsoft.com/en-us/rest/api/billing/enterprise/billing-enterprise-api-usage-detail
         var request = WebRequest.CreateHttp($"https://consumption.azure.com/v3/enrollments/{EaEnrollmentNumber}/usagedetails/download?startTime={dateFrom:yyyy-MM-dd}&endTime={dateTo:yyyy-MM-dd}");
@@ -283,11 +291,11 @@ public class Program
                         waitTime = DateTime.UtcNow.Subtract(startTime);
                         _logger.LogInformation($"{buffer.Length:n0} bytes received in {waitTime.TotalSeconds:n1} s");
                         buffer.Seek(0, SeekOrigin.Begin);
-                        int recordCount = await Run(buffer, dateFrom, dateTo, token).ConfigureAwait(false);
+                        int recordCount = await UploadFromStream(buffer, dateFrom, dateTo, token).ConfigureAwait(false);
                         return recordCount;
                     }
                 } else {
-                    int recordCount = await Run(stream, dateFrom, dateTo, token).ConfigureAwait(false);
+                    int recordCount = await UploadFromStream(stream, dateFrom, dateTo, token).ConfigureAwait(false);
                     return recordCount;
                 }
             }
@@ -299,7 +307,8 @@ public class Program
     {
         try {
             using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read)) {
-                return await Run(stream, dateFrom, dateTo, token).ConfigureAwait(false);
+                await TruncateStageRecords(token).ConfigureAwait(false);
+                return await UploadFromStream(stream, dateFrom, dateTo, token).ConfigureAwait(false);
             }
         } catch (Exception ex) {
             LogException(ex);
@@ -307,7 +316,51 @@ public class Program
         }
     }
 
-    private async Task<int> Run(Stream stream, DateTime dateFrom, DateTime dateTo, CancellationToken token)
+    private async Task TruncateStageRecords(CancellationToken token)
+    {
+        var startTime = DateTime.UtcNow;
+
+        using (var connection = GetSqlConnection()) {
+            await connection.OpenAsync(token).ConfigureAwait(false);
+            var cmd = new SqlCommand("dbo.TruncateAzureUsageRecords_Stage", connection);
+            cmd.CommandType = CommandType.StoredProcedure;
+            await cmd.ExecuteNonQueryAsync(token).ConfigureAwait(false);
+        }
+
+        TimeSpan processingTime = DateTime.UtcNow.Subtract(startTime);
+        _logger.LogInformation($"stage upload prepared in {processingTime.TotalSeconds:n1} s");
+    }
+
+    private async Task<DateTime?> ClearLastStagedDate(CancellationToken token)
+    {
+        var startTime = DateTime.UtcNow;
+        DateTime? lastDate;
+
+        using (var connection = GetSqlConnection()) {
+            await connection.OpenAsync(token).ConfigureAwait(false);
+            var cmd = new SqlCommand("select max([Date]) from dbo.AzureUsageRecords_Stage", connection);
+            lastDate = await cmd.ExecuteScalarAsync(token).ConfigureAwait(false) as DateTime?;
+
+            if (lastDate.HasValue) {
+                cmd = new SqlCommand("delete from dbo.AzureUsageRecords_Stage with(tablock) where [Date] >= @date", connection);
+                cmd.Parameters.Add("date", SqlDbType.DateTime).Value = lastDate;
+                await cmd.ExecuteNonQueryAsync(token).ConfigureAwait(false);
+            }
+        }
+
+        TimeSpan processingTime = DateTime.UtcNow.Subtract(startTime);
+        _logger.LogInformation($"restart prepared in {processingTime.TotalSeconds:n1} s");
+
+        if (lastDate.HasValue) {
+            _logger.LogInformation($"restarting at {lastDate:d}");
+        } else {
+            _logger.LogInformation($"restarting at the beginning");
+        }
+
+        return lastDate;
+    }
+
+    private async Task<int> UploadFromStream(Stream stream, DateTime dateFrom, DateTime dateTo, CancellationToken token)
     {
         int recordCount;
         var startTime = DateTime.UtcNow;
@@ -316,12 +369,6 @@ public class Program
         using (var reader = new StreamReader(stream, Encoding.UTF8))
         using (var connection = GetSqlConnection()) {
             await connection.OpenAsync(token).ConfigureAwait(false);
-            var cmd = new SqlCommand("dbo.TruncateAzureUsageRecords_Stage", connection);
-            cmd.CommandType = CommandType.StoredProcedure;
-            await cmd.ExecuteNonQueryAsync(token).ConfigureAwait(false);
-            processingTime = DateTime.UtcNow.Subtract(startTime);
-            _logger.LogInformation($"upload prepared in {processingTime.TotalSeconds:n1} s");
-
             var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.FireTriggers | SqlBulkCopyOptions.TableLock, null);
             bulkCopy.DestinationTableName = "dbo.AzureUsageRecords_Stage";
             bulkCopy.BatchSize = BatchSize;
@@ -334,7 +381,7 @@ public class Program
 
             using (var recReader = new CsvDataReader<DetailedUsage>(reader, x => { return Sink(x, dateFrom, dateTo); }, TrackMaxLenghts)) {
                 _batchStartTime = DateTime.UtcNow;
-                
+
                 // note: by default SqlBulkCopy relies on column ordinal only - create mappings
                 for (int sourceColumnOrdinal = 0; sourceColumnOrdinal < recReader.FieldCount; sourceColumnOrdinal++) {
                     string destinationColumnName = recReader.GetName(sourceColumnOrdinal);
@@ -470,7 +517,7 @@ public class Program
             cmd.Parameters.Add("@DateTo", SqlDbType.Date).Value = dateTo;
 
             var startTime = DateTime.UtcNow;
-            await connection.OpenAsync(token);
+            await connection.OpenAsync(token).ConfigureAwait(false);
             int recordCount = await cmd.ExecuteNonQueryAsync(token).ConfigureAwait(false);
             var processTime = DateTime.UtcNow.Subtract(startTime);
             _logger.LogInformation($"{recordCount:n0} records commited in {processTime.TotalSeconds:n1} s ({recordCount / processTime.TotalSeconds:n1} rec/s)");
@@ -494,12 +541,11 @@ public class Program
             cmd.Parameters.Add("@IndexCount", SqlDbType.Int).Direction = ParameterDirection.Output;
             cmd.Parameters.Add("@DefragCount", SqlDbType.Int).Direction = ParameterDirection.Output;
 
-            await connection.OpenAsync(token);
+            await connection.OpenAsync(token).ConfigureAwait(false);
             var startTime = DateTime.UtcNow;
 
             cmd.Parameters["@Table"].Value = "dbo.AzureUsageRecords";
             await cmd.ExecuteNonQueryAsync(token).ConfigureAwait(false);
-
             int indexCount = (int)cmd.Parameters["@IndexCount"].Value;
             int defragCount = (int)cmd.Parameters["@DefragCount"].Value;
 
@@ -585,6 +631,11 @@ public class Program
     private void LogException(Exception e, [CallerLineNumber] int line = 0, [CallerMemberName] string caller = null, [CallerFilePath] string file = null)
     {
         file = file == null ? null : Path.GetFileName(file);
-        _logger.LogError($"{e.Message} Function: {caller}(), line: {line}, file: {file}.\n{e.StackTrace}");
+
+        if (e is SqlException) {
+            _logger.LogError($"{nameof(SqlException)} number: {((SqlException)e).Number}, code: {((SqlException)e).ErrorCode}, message: {e.Message} function: {caller}(), line: {line}, file: {file}.\n{e.StackTrace}");
+        } else {
+            _logger.LogError($"{e.GetType().Name}, message: {e.Message}, function: {caller}(), line: {line}, file: {file}.\n{e.StackTrace}");
+        }
     }
 }
