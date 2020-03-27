@@ -5,6 +5,9 @@
 *.bacpac
 MakeDemoData.sql
 .vs
+*.pubxml
+webjob-publish-settings.json
+Settings.job
 /packages
 /AnalysisServicesDatabase/bin
 /AnalysisServicesDatabase/obj
