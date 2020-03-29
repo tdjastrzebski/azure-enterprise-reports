@@ -53,7 +53,8 @@ public class Program
     private readonly bool BufferStream;
 
     private DateTime _batchStartTime;
-
+    
+    // do not modify this class constructor, it is used for dependency injection
     public Program(ILogger<Program> logger, IConfiguration config)
     {
         _logger = logger;
@@ -77,7 +78,7 @@ public class Program
 
         MaxAttemptCount = _config.GetValue("MaxAttemptCount", 3);
         HttpRequestTimeout = _config.GetValue("HttpRequestTimeout", 1000 * 60 * 5); // 5 min
-        BatchCopyTimeout = _config.GetValue("BatchCopyTimeout", 2*60); // 2 min
+        BatchCopyTimeout = _config.GetValue("BatchCopyTimeout", 2 * 60); // 2 min
         BatchSize = _config.GetValue("BatchSize", 10000);
         PeriodCommitTimeout = _config.GetValue("PeriodCommitTimeout", 3 * 60 * 60); // 3h
         MonthsToLookBack = _config.GetValue("MonthsToLookBack", 0); // number of months to look back during initial data load, it seems 9 months is max value
@@ -100,7 +101,7 @@ public class Program
                 string appInsightsKey = context.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
 
                 if (!string.IsNullOrEmpty(appInsightsKey)) {
-                    b.AddApplicationInsights(o => o.InstrumentationKey = appInsightsKey);
+                    b.AddApplicationInsightsWebJobs(o => o.InstrumentationKey = appInsightsKey);
                 }
             })
             .UseConsoleLifetime();
@@ -110,9 +111,10 @@ public class Program
         using (host) host.Run();
     }
 
+    // Note: do not modify this method signature or attibutes, do not simplify "default(CancellationToken)", do not remove unused "timer" parameter
     [Singleton]
     [FunctionName("TimerJob")]
-    public async Task TimerJob([TimerTrigger("%JobDailySchedule%", RunOnStartup = false)] TimerInfo timer, CancellationToken token = default)
+    public async Task TimerJob([TimerTrigger("%JobDailySchedule%", RunOnStartup = false)] TimerInfo timer, CancellationToken token = default(CancellationToken))
     {
         _logger.LogInformation("OS version: " + Environment.OSVersion);
         _logger.LogInformation("user interactive: " + Environment.UserInteractive);
