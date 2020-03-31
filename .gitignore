@@ -15,3 +15,4 @@ Settings.job
 /DailyProcessingWebJob/obj
 /SqlServerDatabase/bin
 /SqlServerDatabase/obj
+appsettings-test.json.cs

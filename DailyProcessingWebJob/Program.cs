@@ -505,7 +505,7 @@ public class Program
     private void BulkCopy_SqlRowsCopied(object sender, SqlRowsCopiedEventArgs e)
     {
         var batchTime = DateTime.UtcNow - _batchStartTime;
-        _logger.LogInformation($"{BatchSize} records uploaded in {batchTime.TotalSeconds:n1} s ({BatchSize / batchTime.TotalSeconds:n1} rec/s), total {e.RowsCopied:n0} records");
+        _logger.LogInformation($"{BatchSize:n0} records uploaded in {batchTime.TotalSeconds:n1} s ({BatchSize / batchTime.TotalSeconds:n1} rec/s), total {e.RowsCopied:n0} records");
         _batchStartTime = DateTime.UtcNow;
     }
 
@@ -555,6 +555,8 @@ public class Program
             await cmd.ExecuteNonQueryAsync(token).ConfigureAwait(false);
             indexCount += (int)cmd.Parameters["@IndexCount"].Value;
             defragCount += (int)cmd.Parameters["@DefragCount"].Value;
+            
+            connection.Close(); // close connection to purge pending InfoMessages
 
             var processTime = DateTime.UtcNow.Subtract(startTime);
             _logger.LogInformation($"{defragCount}/{indexCount} indexes defragmented in {processTime.TotalSeconds:n1} s");
